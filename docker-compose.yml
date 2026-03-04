@@ -1,0 +1,156 @@
+version: "3.9"
+
+networks:
+  meetstack:
+    driver: bridge
+
+volumes:
+  n8n_data:
+  ollama_data:
+  open_webui_data:
+  vikunja_db_data:
+  vikunja_files_data:
+  home_assistant_data:
+  nginx_data:
+  nginx_letsencrypt:
+
+services:
+  # ─── n8n ────────────────────────────────────────────────────────────────────
+  n8n:
+    image: n8nio/n8n:1.47.1
+    container_name: n8n
+    restart: unless-stopped
+    expose:
+      - "5678"
+    environment:
+      - TZ=${TZ}
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./services/n8n:/home/node/.n8n/custom
+    networks:
+      - meetstack
+
+  # ─── Ollama ─────────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:0.3.12
+    container_name: ollama
+    restart: unless-stopped
+    expose:
+      - "11434"
+    environment:
+      - TZ=${TZ}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./services/ollama:/etc/ollama
+    # Uncomment the following section to enable GPU passthrough on an RTX 4070 Ti
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    networks:
+      - meetstack
+
+  # ─── Open WebUI ─────────────────────────────────────────────────────────────
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:0.3.21
+    container_name: open-webui
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      - TZ=${TZ}
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - open_webui_data:/app/backend/data
+      - ./services/open-webui:/app/backend/config
+    depends_on:
+      - ollama
+    networks:
+      - meetstack
+
+  # ─── Vikunja (database) ─────────────────────────────────────────────────────
+  vikunja-db:
+    image: mariadb:11.4
+    container_name: vikunja-db
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${VIKUNJA_DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${VIKUNJA_DB_NAME}
+      - MYSQL_USER=${VIKUNJA_DB_USER}
+      - MYSQL_PASSWORD=${VIKUNJA_DB_PASSWORD}
+    volumes:
+      - vikunja_db_data:/var/lib/mysql
+    networks:
+      - meetstack
+
+  # ─── Vikunja ────────────────────────────────────────────────────────────────
+  vikunja:
+    image: vikunja/vikunja:0.23.0
+    container_name: vikunja
+    restart: unless-stopped
+    expose:
+      - "3456"
+    environment:
+      - TZ=${TZ}
+      - VIKUNJA_DATABASE_HOST=vikunja-db
+      - VIKUNJA_DATABASE_TYPE=mysql
+      - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
+      - VIKUNJA_DATABASE_USER=${VIKUNJA_DB_USER}
+      - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD}
+      - VIKUNJA_SERVICE_JWTSECRET=${VIKUNJA_JWT_SECRET}
+      - VIKUNJA_SERVICE_FRONTENDURL=${VIKUNJA_FRONTEND_URL}
+    volumes:
+      - vikunja_files_data:/app/vikunja/files
+      - ./services/vikunja:/app/vikunja/config
+    depends_on:
+      - vikunja-db
+    networks:
+      - meetstack
+
+  # ─── Home Assistant ─────────────────────────────────────────────────────────
+  home-assistant:
+    image: ghcr.io/home-assistant/home-assistant:2024.11
+    container_name: home-assistant
+    restart: unless-stopped
+    expose:
+      - "8123"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - home_assistant_data:/config
+      - ./services/home-assistant:/config/custom_components
+    privileged: true
+    networks:
+      - meetstack
+
+  # ─── Nginx Proxy Manager ────────────────────────────────────────────────────
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:2.11.3
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "${NPM_HTTP_PORT:-80}:80"
+      - "${NPM_HTTPS_PORT:-443}:443"
+      - "${NPM_ADMIN_PORT:-81}:81"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - nginx_data:/data
+      - nginx_letsencrypt:/etc/letsencrypt
+      - ./nginx/proxy.conf:/etc/nginx/conf.d/custom.conf:ro
+    depends_on:
+      - n8n
+      - open-webui
+      - vikunja
+      - home-assistant
+    networks:
+      - meetstack
