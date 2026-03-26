@@ -43,6 +43,7 @@ WORKFLOW1='{
     },
     {
       "parameters": {
+        "method": "POST",
         "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "specifyBody": "json",
@@ -57,6 +58,7 @@ WORKFLOW1='{
     },
     {
       "parameters": {
+        "method": "POST",
         "url": "http://wikijs:3000/graphql",
         "sendBody": true,
         "specifyBody": "json",
@@ -142,6 +144,7 @@ WORKFLOW2='{
     },
     {
       "parameters": {
+        "method": "GET",
         "url": "http://vikunja:3456/api/v1/tasks/all",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
@@ -155,6 +158,7 @@ WORKFLOW2='{
     },
     {
       "parameters": {
+        "method": "POST",
         "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "specifyBody": "json",
@@ -207,6 +211,7 @@ WORKFLOW3='{
     },
     {
       "parameters": {
+        "method": "POST",
         "url": "http://wikijs:3000/graphql",
         "sendBody": true,
         "specifyBody": "json",
@@ -221,6 +226,7 @@ WORKFLOW3='{
     },
     {
       "parameters": {
+        "method": "POST",
         "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "specifyBody": "json",
