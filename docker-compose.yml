@@ -1,5 +1,3 @@
-version: "3.9"
-
 networks:
   meetstack:
     driver: bridge
@@ -10,7 +8,10 @@ volumes:
   open_webui_data:
   vikunja_db_data:
   vikunja_files_data:
-  home_assistant_data:
+  wikijs_db_data:
+  wikijs_data:
+  radicale_data:
+  whisper_cache:
   nginx_data:
   nginx_letsencrypt:
 
@@ -27,10 +28,17 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
       - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_SECURE_COOKIE=false
       - WEBHOOK_URL=${N8N_WEBHOOK_URL}
     volumes:
       - n8n_data:/home/node/.n8n
       - ./services/n8n:/home/node/.n8n/custom
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5678/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     networks:
       - meetstack
 
@@ -47,7 +55,13 @@ services:
     volumes:
       - ollama_data:/root/.ollama
       - ./services/ollama:/etc/ollama
-    # Uncomment the following section to enable GPU passthrough on an RTX 4070 Ti
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    # Uncomment the following section to enable GPU passthrough (NVIDIA)
     # deploy:
     #   resources:
     #     reservations:
@@ -71,8 +85,15 @@ services:
     volumes:
       - open_webui_data:/app/backend/data
       - ./services/open-webui:/app/backend/config
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSL http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     depends_on:
-      - ollama
+      ollama:
+        condition: service_healthy
     networks:
       - meetstack
 
@@ -89,6 +110,12 @@ services:
       - MYSQL_PASSWORD=${VIKUNJA_DB_PASSWORD}
     volumes:
       - vikunja_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     networks:
       - meetstack
 
@@ -111,24 +138,114 @@ services:
     volumes:
       - vikunja_files_data:/app/vikunja/files
       - ./services/vikunja:/app/vikunja/config
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3456/api/v1/info || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     depends_on:
-      - vikunja-db
+      vikunja-db:
+        condition: service_healthy
     networks:
       - meetstack
 
-  # ─── Home Assistant ─────────────────────────────────────────────────────────
-  home-assistant:
-    image: ghcr.io/home-assistant/home-assistant:2024.11
-    container_name: home-assistant
+  # ─── Wiki.js (database) ────────────────────────────────────────────────────
+  wikijs-db:
+    image: postgres:16-alpine
+    container_name: wikijs-db
     restart: unless-stopped
-    expose:
-      - "8123"
     environment:
       - TZ=${TZ}
+      - POSTGRES_DB=${WIKIJS_DB_NAME}
+      - POSTGRES_USER=${WIKIJS_DB_USER}
+      - POSTGRES_PASSWORD=${WIKIJS_DB_PASSWORD}
     volumes:
-      - home_assistant_data:/config
-      - ./services/home-assistant:/config/custom_components
-    privileged: true
+      - wikijs_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${WIKIJS_DB_USER} -d ${WIKIJS_DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - meetstack
+
+  # ─── Wiki.js ────────────────────────────────────────────────────────────────
+  wikijs:
+    image: ghcr.io/requarks/wiki:2
+    container_name: wikijs
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - TZ=${TZ}
+      - DB_TYPE=postgres
+      - DB_HOST=wikijs-db
+      - DB_PORT=5432
+      - DB_NAME=${WIKIJS_DB_NAME}
+      - DB_USER=${WIKIJS_DB_USER}
+      - DB_PASS=${WIKIJS_DB_PASSWORD}
+    volumes:
+      - wikijs_data:/wiki/data
+      - ./services/wikijs:/wiki/config
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSL http://localhost:3000/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      wikijs-db:
+        condition: service_healthy
+    networks:
+      - meetstack
+
+  # ─── Radicale (CalDAV calendar) ────────────────────────────────────────────
+  radicale:
+    image: tomsquest/docker-radicale:3.6.1.0
+    container_name: radicale
+    restart: unless-stopped
+    expose:
+      - "5232"
+    environment:
+      - TZ=${TZ}
+      - RADICALE_CONFIG_SERVER_HOSTS=0.0.0.0:5232
+      - RADICALE_CONFIG_AUTH_TYPE=none
+      - RADICALE_CONFIG_AUTH_HTPASSWD_FILENAME=/data/users
+      - RADICALE_CONFIG_AUTH_HTPASSWD_ENCRYPTION=bcrypt
+      - RADICALE_CONFIG_STORAGE_FILESYSTEM_FOLDER=/data/collections
+      - RADICALE_CONFIG_LOGGING_LEVEL=warning
+    volumes:
+      - radicale_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:5232/.web/')\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - meetstack
+
+  # ─── Whisper (speech-to-text) ───────────────────────────────────────────────
+  whisper:
+    image: onerahmet/openai-whisper-asr-webservice:latest
+    container_name: whisper
+    restart: unless-stopped
+    expose:
+      - "9000"
+    environment:
+      - TZ=${TZ}
+      - ASR_MODEL=${WHISPER_MODEL:-tiny}
+      - ASR_ENGINE=openai_whisper
+    volumes:
+      - whisper_cache:/root/.cache/whisper
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSL http://localhost:9000/docs || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     networks:
       - meetstack
 
@@ -146,11 +263,22 @@ services:
     volumes:
       - nginx_data:/data
       - nginx_letsencrypt:/etc/letsencrypt
-      - ./nginx/proxy.conf:/etc/nginx/conf.d/custom.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSL http://localhost:81/api/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     depends_on:
-      - n8n
-      - open-webui
-      - vikunja
-      - home-assistant
+      n8n:
+        condition: service_healthy
+      open-webui:
+        condition: service_healthy
+      vikunja:
+        condition: service_healthy
+      wikijs:
+        condition: service_healthy
+      radicale:
+        condition: service_healthy
     networks:
       - meetstack

@@ -1,0 +1,16 @@
+# Radicale configuration
+# https://radicale.org/v3.html#configuration
+
+[server]
+hosts = 0.0.0.0:5232
+
+[auth]
+type = htpasswd
+htpasswd_filename = /data/users
+htpasswd_encryption = bcrypt
+
+[storage]
+filesystem_folder = /data/collections
+
+[logging]
+level = warning
