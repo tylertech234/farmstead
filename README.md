@@ -158,6 +158,72 @@ available through Nginx Proxy Manager using `.localhost` domains:
 
 ---
 
+## AI Agent Infrastructure
+
+MeetStack includes a context-aware AI agent that can search the wiki, fetch
+tasks, and generate answers using a local LLM. The agent pipeline runs entirely
+through n8n webhooks — no external API calls.
+
+### Architecture
+
+```
+User Question → n8n Agent Router → Wiki.js search (GraphQL)
+                                 → Vikunja task fetch
+                                 → Ollama llama3.2:3b (RAG prompt)
+                                 → JSON response
+```
+
+### Webhooks
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/webhook/agent` | POST | Ask the AI agent a question (RAG with wiki + tasks) |
+| `/webhook/escalate` | POST | Create a high-priority Vikunja task for SO review |
+| `/webhook/learn` | POST | Add a verified Q&A to the wiki knowledge base |
+
+### Usage
+
+```bash
+# Ask the agent
+curl -X POST http://n8n.localhost/webhook/agent \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What are the latest meeting minutes about?"}'
+
+# Escalate to Senior Officer
+curl -X POST http://n8n.localhost/webhook/escalate \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Leave policy?", "user": "cadet-smith", "agent_response": "Not confident"}'
+
+# Teach the agent (adds to wiki)
+curl -X POST http://n8n.localhost/webhook/learn \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Uniform policy for field exercises?", "answer": "ACU pattern required..."}'
+```
+
+### Model Selection
+
+| GPU VRAM | Recommended Model | Notes |
+|---|---|---|
+| < 4 GB | `tinyllama` (1.1B) | Basic, fast, limited quality |
+| 4 GB | `llama3.2:3b` (2 GB) | **Default** — good balance for GTX 1650 |
+| 6 GB+ | `llama3.1:8b` (4.7 GB) | Best quality, needs more VRAM |
+
+### Setup
+
+```bash
+# Run the agent setup script (after bootstrap.ps1)
+docker exec nginx-proxy-manager bash /tmp/setup-agent.sh
+```
+
+Or manually:
+```bash
+docker exec ollama ollama pull llama3.2:3b
+docker cp scripts/setup-agent.sh nginx-proxy-manager:/tmp/
+docker exec nginx-proxy-manager bash /tmp/setup-agent.sh
+```
+
+---
+
 ## SBC Deployment Notes
 
 When running on a Raspberry Pi 5 (8 GB) or similar ARM SBC:
@@ -248,6 +314,7 @@ meetstack/
 │   ├── setup-wiki.sh         # Seed Wiki.js with starter pages
 │   ├── setup-vikunja.sh      # Seed Vikunja with projects & tasks
 │   ├── setup-n8n.sh          # Create n8n demo workflows
+│   ├── setup-agent.sh        # Create AI agent workflows (RAG, escalation, learning)
 │   ├── backup.sh             # Dump all Docker volumes to tar archives
 │   ├── restore.sh            # Restore a volume from a tar archive
 │   └── pull-model.sh         # Pull the Ollama model from .env

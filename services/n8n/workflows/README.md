@@ -171,6 +171,119 @@ syncs due dates to the Radicale calendar.
 
 ---
 
+## 6. MeetStack Agent Router
+
+Central AI agent workflow that receives user questions, searches Wiki.js for
+context via RAG, generates an answer with Ollama, and self-assesses confidence
+to trigger escalation or learning workflows.
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ Webhook      │────▸│ Wiki.js      │────▸│ Ollama LLM   │────▸│ Confidence   │
+│ POST /agent  │     │ Search (RAG) │     │ Generate     │     │ Check        │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────┬───────┘
+                                                                      │
+                                                          ┌───────────┼───────────┐
+                                                          ▼           ▼           ▼
+                                                   ┌───────────┐ ┌─────────┐ ┌─────────┐
+                                                   │ Respond   │ │Escalate │ │ Learn   │
+                                                   │ (high)    │ │ (low)   │ │ (SO ok) │
+                                                   └───────────┘ └─────────┘ └─────────┘
+```
+
+### Nodes (single Code node)
+
+1. **Webhook** — `POST /webhook/agent` accepts `{ "message": "..." }`
+2. **Code node** — orchestrates the full pipeline:
+   - Authenticates to Wiki.js via GraphQL login mutation
+   - Searches wiki using GraphQL variables: `query SearchPages($q: String!) { pages { search(query: $q) { results { title path } } } }`
+   - Fetches full page content for top results
+   - Sends context + question to Ollama `llama3.2:3b` with MeetStack system prompt
+   - Parses confidence from the LLM response
+   - If low confidence → calls `/webhook/escalate` (Escalation Manager)
+   - If SO provides answer later → calls `/webhook/learn` (Learn from SO)
+3. **Respond to Webhook** — returns `{ answer, confidence, wiki_results, source }`
+
+### Key design decisions
+
+- Uses `this.helpers.httpRequest()` in Code node for all HTTP calls (avoids escaping issues with HTTP Request nodes)
+- Wiki.js search uses **GraphQL variables** (not string interpolation) to safely pass user input
+- System prompt includes full MeetStack knowledge (parade nights, CO, enrolment, uniform, events)
+- Confidence threshold: response containing "not confident" or "don't have" triggers escalation
+
+### Environment / credentials needed
+
+- Wiki.js admin credentials (for GraphQL auth)
+- Ollama accessible at `http://ollama:11434`
+- n8n webhook URLs for escalation and learning workflows
+
+---
+
+## 7. Escalation Manager
+
+Creates a high-priority Vikunja task when the Agent Router is not confident
+in its answer, flagging it for Senior Officer review.
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ Webhook      │────▸│ Vikunja Auth │────▸│ Create Task  │
+│ POST         │     │ + Task Create│     │ (priority 5) │
+│ /escalate    │     │ (Code node)  │     │              │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+### Nodes (single Code node)
+
+1. **Webhook** — `POST /webhook/escalate` accepts `{ "question", "user", "agent_response" }`
+2. **Code node** — authenticates to Vikunja API, creates a task:
+   - `PUT /api/v1/projects/1/tasks` with Bearer token auth
+   - Task title: `[ESCALATION] <question>`
+   - Task description: includes the agent's response and requesting user
+   - Priority: 5 (urgent)
+3. **Respond to Webhook** — returns `{ status: "escalated", task_id, message }`
+
+### Environment / credentials needed
+
+- Vikunja admin credentials (`admin@meetstack.local`)
+
+---
+
+## 8. Learn from SO Response
+
+When a Senior Officer provides the correct answer to an escalated question,
+this workflow saves the knowledge to Wiki.js so the agent can find it in
+future queries.
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ Webhook      │────▸│ Wiki.js Auth │────▸│ Create Page  │
+│ POST /learn  │     │ + Page Create│     │ learned/slug │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+### Nodes (single Code node)
+
+1. **Webhook** — `POST /webhook/learn` accepts `{ "question", "answer" }`
+2. **Code node** — authenticates to Wiki.js GraphQL API, creates a page:
+   - Generates a URL-safe slug from the question
+   - Creates page at `learned/<slug>` with the question as title and answer as content
+   - Uses GraphQL mutation with variables to avoid escaping issues
+3. **Respond to Webhook** — returns `{ status: "learned", page_path, message }`
+
+### How the learning loop works
+
+1. Agent Router receives a question it can't answer confidently
+2. Escalation Manager creates a Vikunja task for SO review
+3. SO answers the task and triggers `/webhook/learn` with the Q&A
+4. Next time anyone asks a similar question, Wiki.js search returns the learned page
+5. Agent Router includes it as RAG context and answers confidently
+
+### Environment / credentials needed
+
+- Wiki.js admin credentials (for GraphQL auth)
+
+---
+
 ## System prompt template
 
 Save this as a reference for workflows #1, #2, and #3. Customise the FAQ
