@@ -18,13 +18,15 @@ echo "Logged in to Wiki.js"
 
 AUTH="Authorization: Bearer $JWT"
 
-# Create test pages
+# Create test pages using GraphQL variables (avoids escaping issues)
 create_page() {
   local path="$1" title="$2" content="$3"
   curl -s -X POST "$WIKI" \
     -H "Content-Type: application/json" \
     -H "$AUTH" \
-    -d "{\"query\":\"mutation { pages { create(content: \\\"$content\\\", description: \\\"\\\", editor: \\\"markdown\\\", isPublished: true, isPrivate: false, locale: \\\"en\\\", path: \\\"$path\\\", tags: [], title: \\\"$title\\\") { responseResult { succeeded message } } } }\"}" > /dev/null
+    -d @- <<EOF > /dev/null
+{"query":"mutation CreatePage(\$content: String!, \$path: String!, \$title: String!) { pages { create(content: \$content, description: \"\", editor: \"markdown\", isPublished: true, isPrivate: false, locale: \"en\", path: \$path, tags: [], title: \$title) { responseResult { succeeded message } } } }","variables":{"content":"$content","path":"$path","title":"$title"}}
+EOF
   echo "  Created: $title ($path)"
 }
 
