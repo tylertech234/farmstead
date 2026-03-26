@@ -1,12 +1,13 @@
 #!/bin/bash
 # Set up the MeetStack AI Agent infrastructure:
-#   1. Pull llama3.2:3b model (optimized for 4GB VRAM)
+#   1. Auto-detect GPU VRAM and pick the best model (or use OLLAMA_AGENT_MODEL)
 #   2. Create Open WebUI MeetStack Agent preset
-#   3. Create n8n Agent Router workflow (RAG: wiki search + Ollama)
+#   3. Create n8n Agent Router workflow (keyword extraction + RAG + Ollama)
 #   4. Create n8n Escalation Manager workflow (creates Vikunja tasks)
 #   5. Create n8n Learn from SO workflow (adds wiki pages from SO answers)
 #
-# Usage: docker exec nginx-proxy-manager bash /tmp/setup-agent.sh
+# Usage: docker exec nginx-proxy-manager bash /tmp/setup-agent.sh [model_name]
+#   e.g. docker exec nginx-proxy-manager bash /tmp/setup-agent.sh llama3.1:8b
 
 set -e
 
@@ -15,11 +16,39 @@ OLLAMA="http://ollama:11434"
 OPENWEBUI="http://open-webui:8080"
 WIKI="http://wikijs:3000"
 
-# ── Step 1: Pull llama3.2:3b ──────────────────────────────────────────
-echo "Pulling llama3.2:3b model (this may take a few minutes)..."
+# ── Step 0: Pick the right model ──────────────────────────────────────
+# Priority: CLI arg > OLLAMA_AGENT_MODEL env > auto-detect via VRAM
+if [ -n "${1:-}" ]; then
+  MODEL="$1"
+elif [ -n "${OLLAMA_AGENT_MODEL:-}" ]; then
+  MODEL="$OLLAMA_AGENT_MODEL"
+else
+  echo "Auto-detecting best model for your GPU..."
+  VRAM_BYTES=$(curl -s "$OLLAMA/api/ps" 2>/dev/null | grep -oP '"total":\K[0-9]+' | head -1 || true)
+  if [ -z "$VRAM_BYTES" ]; then
+    # Fallback: try nvidia-smi or assume low VRAM
+    VRAM_GB=0
+  else
+    VRAM_GB=$(( VRAM_BYTES / 1073741824 ))
+  fi
+
+  if [ "$VRAM_GB" -ge 14 ]; then
+    MODEL="llama3.1:13b"
+  elif [ "$VRAM_GB" -ge 8 ]; then
+    MODEL="llama3.1:8b"
+  else
+    MODEL="llama3.2:3b"
+  fi
+  echo "  Detected ~${VRAM_GB}GB VRAM → selected $MODEL"
+fi
+
+echo "Using model: $MODEL"
+
+# ── Step 1: Pull model ────────────────────────────────────────────────
+echo "Pulling $MODEL (this may take a few minutes)..."
 curl -s -X POST "$OLLAMA/api/pull" \
   -H "Content-Type: application/json" \
-  -d '{"name":"llama3.2:3b","stream":false}' | grep -q "success" && \
+  -d "{\"name\":\"$MODEL\",\"stream\":false}" | grep -q "success" && \
   echo "✓ Model pulled" || echo "⚠ Model pull may still be in progress"
 
 # ── Step 2: Login to Open WebUI ───────────────────────────────────────
@@ -36,7 +65,7 @@ else
 
   # Create MeetStack Agent model preset
   echo "Creating MeetStack Agent preset..."
-  AGENT_PRESET='{"id":"meetstack-agent","name":"MeetStack Agent","meta":{"profile_image_url":"/static/favicon.png","description":"Context-aware AI assistant for MeetStack - knows wiki content, tasks, and team info","capabilities":{"vision":false}},"base_model_id":"llama3.2:3b","params":{"temperature":0.4,"top_p":0.9,"num_predict":500,"system":"You are MeetStack Agent, the AI assistant for a small military unit collaboration platform called MeetStack.\n\nYou have access to:\n- Wiki.js knowledge base with meeting minutes, SOPs, FAQ, and contact info\n- Vikunja task management with team tasks and projects\n- Calendar via Radicale\n- Whisper for speech-to-text\n\nKey knowledge:\n- Team: Tyler (Tech Lead), Sarah (Logistics), Marcus (Comms), Jenny (Admin)\n- Weekly standups documented in Meeting Minutes\n- SOPs cover radio protocols, equipment checkout, incident reporting\n- FAQ covers common cadet questions\n\nBe concise, professional, and helpful. If you are not confident, say so and suggest escalating to the Senior Officer."}}'
+  AGENT_PRESET="{\"id\":\"meetstack-agent\",\"name\":\"MeetStack Agent\",\"meta\":{\"profile_image_url\":\"/static/favicon.png\",\"description\":\"Context-aware AI assistant for MeetStack - knows wiki content, tasks, and team info\",\"capabilities\":{\"vision\":false}},\"base_model_id\":\"$MODEL\",\"params\":{\"temperature\":0.4,\"top_p\":0.9,\"num_predict\":500,\"system\":\"You are MeetStack Agent, the AI assistant for a small military unit collaboration platform called MeetStack.\\n\\nYou have access to:\\n- Wiki.js knowledge base with meeting minutes, SOPs, FAQ, and contact info\\n- Vikunja task management with team tasks and projects\\n- Calendar via Radicale\\n- Whisper for speech-to-text\\n\\nKey knowledge:\\n- Team: Tyler (Tech Lead), Sarah (Logistics), Marcus (Comms), Jenny (Admin)\\n- Weekly standups documented in Meeting Minutes\\n- SOPs cover radio protocols, equipment checkout, incident reporting\\n- FAQ covers common cadet questions\\n\\nBe concise, professional, and helpful. If you are not confident, say so and suggest escalating to the Senior Officer.\"}}"
 
   PRESET_RESP=$(curl -s -X POST "$OPENWEBUI/api/v1/models/add" \
     -H "Content-Type: application/json" \
@@ -68,7 +97,7 @@ echo "Creating MeetStack Agent Router..."
 
 # The Code node JS is stored as a JSON string - escape carefully
 read -r -d '' AGENT_CODE << 'JSEOF' || true
-const userMessage = $input.all()[0].json.body.message;\nif (!userMessage) {\n  return [{ json: { answer: \"Please provide a message.\", source: \"system\" } }];\n}\n\nlet wikiJwt = \"\";\ntry {\n  const loginResp = await this.helpers.httpRequest({\n    method: \"POST\",\n    url: \"http://wikijs:3000/graphql\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({\n      query: 'mutation { authentication { login(username: \\\"admin@meetstack.local\\\", password: \\\"MeetStack2026!\\\", strategy: \\\"local\\\") { jwt } } }'\n    })\n  });\n  wikiJwt = loginResp.data.authentication.login.jwt;\n} catch (e) {}\n\nlet wikiResults = [];\nif (wikiJwt) {\n  try {\n    const searchResp = await this.helpers.httpRequest({\n      method: \"POST\",\n      url: \"http://wikijs:3000/graphql\",\n      headers: { \"Content-Type\": \"application/json\", \"Authorization\": \"Bearer \" + wikiJwt },\n      body: JSON.stringify({\n        query: \"query SearchPages($q: String!) { pages { search(query: $q) { results { title path } } } }\",\n        variables: { q: userMessage.substring(0, 100) }\n      })\n    });\n    if (searchResp.data && searchResp.data.pages && searchResp.data.pages.search) {\n      wikiResults = searchResp.data.pages.search.results || [];\n    }\n  } catch (e) {}\n}\n\nlet wikiContext = \"\";\nfor (const page of wikiResults.slice(0, 2)) {\n  try {\n    const pageResp = await this.helpers.httpRequest({\n      method: \"POST\",\n      url: \"http://wikijs:3000/graphql\",\n      headers: { \"Content-Type\": \"application/json\", \"Authorization\": \"Bearer \" + wikiJwt },\n      body: JSON.stringify({\n        query: \"query GetPage($p: String!) { pages { singleByPath(path: $p, locale: \\\"en\\\") { title content } } }\",\n        variables: { p: page.path }\n      })\n    });\n    const pg = pageResp.data && pageResp.data.pages && pageResp.data.pages.singleByPath;\n    if (pg) wikiContext += \"\\n\\n--- \" + pg.title + \" ---\\n\" + pg.content.substring(0, 1500);\n  } catch (e) {}\n}\n\nlet taskContext = \"\";\ntry {\n  const vikLogin = await this.helpers.httpRequest({\n    method: \"POST\",\n    url: \"http://vikunja:3456/api/v1/login\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({ username: \"admin\", password: \"MeetStack2026!\" })\n  });\n  if (vikLogin.token) {\n    const taskList = await this.helpers.httpRequest({\n      method: \"GET\",\n      url: \"http://vikunja:3456/api/v1/tasks/all\",\n      headers: { \"Authorization\": \"Bearer \" + vikLogin.token }\n    });\n    if (Array.isArray(taskList)) {\n      const top5 = taskList.slice(0, 5).map(t => \"- [\" + (t.done ? \"x\" : \" \") + \"] \" + t.title).join(\"\\n\");\n      taskContext = \"\\n\\nRecent Tasks:\\n\" + top5;\n    }\n  }\n} catch (e) {}\n\nconst prompt = \"You are MeetStack Agent. Answer based on context below. If unsure, suggest escalating to the Senior Officer.\\n\\nWIKI CONTEXT:\" + (wikiContext || \"\\nNo wiki results.\") + taskContext + \"\\n\\nUSER: \" + userMessage + \"\\n\\nAnswer concisely:\";\n\nlet answer = \"Sorry, I could not generate a response.\";\ntry {\n  const ollamaResp = await this.helpers.httpRequest({\n    method: \"POST\",\n    url: \"http://ollama:11434/api/generate\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({ model: \"llama3.2:3b\", prompt: prompt, stream: false, options: { temperature: 0.4, num_predict: 500 } })\n  });\n  if (ollamaResp.response) answer = ollamaResp.response;\n} catch (e) { answer = \"Ollama is not responding.\"; }\n\nconst source = wikiResults.length > 0 ? wikiResults.map(r => r.title).join(\", \") : \"general knowledge\";\nreturn [{ json: { answer, source, wiki_results: wikiResults.length } }];
+const userMessage = $input.all()[0].json.body.message;\nif (!userMessage) {\n  return [{ json: { answer: \"Please provide a message.\", source: \"system\" } }];\n}\n\n// Step 1: Extract search keywords using LLM (fixes full-sentence search issue)\nlet searchTerms = userMessage.substring(0, 100);\ntry {\n  const kwResp = await this.helpers.httpRequest({\n    method: \"POST\",\n    url: \"http://ollama:11434/api/generate\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({\n      model: \"AGENT_MODEL_PLACEHOLDER\",\n      prompt: \"Extract 1-3 search keywords from this question. Return ONLY the keywords separated by spaces, nothing else.\\n\\nQuestion: \" + userMessage + \"\\n\\nKeywords:\",\n      stream: false,\n      options: { temperature: 0.1, num_predict: 20 }\n    })\n  });\n  if (kwResp.response) searchTerms = kwResp.response.trim().substring(0, 100);\n} catch (e) {}\n\nlet wikiJwt = \"\";\ntry {\n  const loginResp = await this.helpers.httpRequest({\n    method: \"POST\",\n    url: \"http://wikijs:3000/graphql\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({\n      query: 'mutation { authentication { login(username: \\\"admin@meetstack.local\\\", password: \\\"MeetStack2026!\\\", strategy: \\\"local\\\") { jwt } } }'\n    })\n  });\n  wikiJwt = loginResp.data.authentication.login.jwt;\n} catch (e) {}\n\nlet wikiResults = [];\nif (wikiJwt) {\n  try {\n    const searchResp = await this.helpers.httpRequest({\n      method: \"POST\",\n      url: \"http://wikijs:3000/graphql\",\n      headers: { \"Content-Type\": \"application/json\", \"Authorization\": \"Bearer \" + wikiJwt },\n      body: JSON.stringify({\n        query: \"query SearchPages($q: String!) { pages { search(query: $q) { results { title path } } } }\",\n        variables: { q: searchTerms }\n      })\n    });\n    if (searchResp.data && searchResp.data.pages && searchResp.data.pages.search) {\n      wikiResults = searchResp.data.pages.search.results || [];\n    }\n  } catch (e) {}\n}\n\nlet wikiContext = \"\";\nfor (const page of wikiResults.slice(0, 3)) {\n  try {\n    const pageResp = await this.helpers.httpRequest({\n      method: \"POST\",\n      url: \"http://wikijs:3000/graphql\",\n      headers: { \"Content-Type\": \"application/json\", \"Authorization\": \"Bearer \" + wikiJwt },\n      body: JSON.stringify({\n        query: \"query GetPage($p: String!) { pages { singleByPath(path: $p, locale: \\\"en\\\") { title content } } }\",\n        variables: { p: page.path }\n      })\n    });\n    const pg = pageResp.data && pageResp.data.pages && pageResp.data.pages.singleByPath;\n    if (pg) wikiContext += \"\\n\\n--- \" + pg.title + \" ---\\n\" + pg.content.substring(0, 1500);\n  } catch (e) {}\n}\n\nlet taskContext = \"\";\ntry {\n  const vikLogin = await this.helpers.httpRequest({\n    method: \"POST\",\n    url: \"http://vikunja:3456/api/v1/login\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({ username: \"admin\", password: \"MeetStack2026!\" })\n  });\n  if (vikLogin.token) {\n    const taskList = await this.helpers.httpRequest({\n      method: \"GET\",\n      url: \"http://vikunja:3456/api/v1/tasks/all\",\n      headers: { \"Authorization\": \"Bearer \" + vikLogin.token }\n    });\n    if (Array.isArray(taskList)) {\n      const top5 = taskList.slice(0, 5).map(t => \"- [\" + (t.done ? \"x\" : \" \") + \"] \" + t.title).join(\"\\n\");\n      taskContext = \"\\n\\nRecent Tasks:\\n\" + top5;\n    }\n  }\n} catch (e) {}\n\nconst prompt = \"You are MeetStack Agent. Answer based on context below. If unsure, suggest escalating to the Senior Officer.\\n\\nWIKI CONTEXT:\" + (wikiContext || \"\\nNo wiki results.\") + taskContext + \"\\n\\nUSER: \" + userMessage + \"\\n\\nAnswer concisely:\";\n\nlet answer = \"Sorry, I could not generate a response.\";\ntry {\n  const ollamaResp = await this.helpers.httpRequest({\n    method: \"POST\",\n    url: \"http://ollama:11434/api/generate\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({ model: \"AGENT_MODEL_PLACEHOLDER\", prompt: prompt, stream: false, options: { temperature: 0.4, num_predict: 500 } })\n  });\n  if (ollamaResp.response) answer = ollamaResp.response;\n} catch (e) { answer = \"Ollama is not responding.\"; }\n\nconst source = wikiResults.length > 0 ? wikiResults.map(r => r.title).join(\", \") : \"general knowledge\";\nreturn [{ json: { answer, source, wiki_results: wikiResults.length, search_terms: searchTerms } }];
 JSEOF
 
 AGENT_ROUTER=$(cat <<'EOF'
@@ -98,8 +127,9 @@ AGENT_ROUTER=$(cat <<'EOF'
 EOF
 )
 
-# Replace placeholder with actual code
+# Replace placeholders with actual code and model
 AGENT_ROUTER_FINAL=$(echo "$AGENT_ROUTER" | sed "s|AGENT_CODE_PLACEHOLDER|$AGENT_CODE|")
+AGENT_ROUTER_FINAL=$(echo "$AGENT_ROUTER_FINAL" | sed "s|AGENT_MODEL_PLACEHOLDER|$MODEL|g")
 
 RESP=$(curl -s -X POST "$N8N/rest/workflows" \
   -H "Content-Type: application/json" -H "$AUTH" \
@@ -206,7 +236,7 @@ echo "════════════════════════�
 echo "  MeetStack Agent Infrastructure Setup Complete"
 echo "═══════════════════════════════════════════════════════"
 echo ""
-echo "  Model:      llama3.2:3b (optimized for 4GB VRAM)"
+echo "  Model:      $MODEL"
 echo "  Open WebUI: MeetStack Agent preset available"
 echo ""
 echo "  n8n Webhooks:"

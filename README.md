@@ -167,11 +167,16 @@ through n8n webhooks — no external API calls.
 ### Architecture
 
 ```
-User Question → n8n Agent Router → Wiki.js search (GraphQL)
+User Question → n8n Agent Router → LLM keyword extraction
+                                 → Wiki.js search (GraphQL)
                                  → Vikunja task fetch
-                                 → Ollama llama3.2:3b (RAG prompt)
+                                 → Ollama LLM (RAG prompt)
                                  → JSON response
 ```
+
+The agent first uses the LLM to extract search keywords from natural language
+questions (so "What are the meeting minutes about?" becomes "meeting minutes"),
+then searches Wiki.js with those keywords for relevant context.
 
 ### Webhooks
 
@@ -202,24 +207,26 @@ curl -X POST http://n8n.localhost/webhook/learn \
 
 ### Model Selection
 
-| GPU VRAM | Recommended Model | Notes |
-|---|---|---|
-| < 4 GB | `tinyllama` (1.1B) | Basic, fast, limited quality |
-| 4 GB | `llama3.2:3b` (2 GB) | **Default** — good balance for GTX 1650 |
-| 6 GB+ | `llama3.1:8b` (4.7 GB) | Best quality, needs more VRAM |
+Set `OLLAMA_AGENT_MODEL` in `.env` or pass as an argument to `setup-agent.sh`.
+If omitted, the script auto-detects VRAM and picks the best fit.
+
+| GPU VRAM | Recommended Model | Speed | Notes |
+|---|---|---|---|
+| < 4 GB | `tinyllama` (1.1B) | ~30 tok/s | Basic, fast, limited quality |
+| 4 GB | `llama3.2:3b` (2 GB) | ~15 tok/s | Good balance for GTX 1650 |
+| 8–12 GB | `llama3.1:8b` (4.7 GB) | ~25 tok/s | **Recommended** — RTX 3060/4070, Tesla P100 |
+| 16 GB+ | `llama3.1:13b` Q4 (7.4 GB) | ~15 tok/s | Best quality — P100 16GB, RTX 4090 |
 
 ### Setup
 
 ```bash
 # Run the agent setup script (after bootstrap.ps1)
-docker exec nginx-proxy-manager bash /tmp/setup-agent.sh
-```
-
-Or manually:
-```bash
-docker exec ollama ollama pull llama3.2:3b
+# Auto-detects your GPU and picks the best model
 docker cp scripts/setup-agent.sh nginx-proxy-manager:/tmp/
 docker exec nginx-proxy-manager bash /tmp/setup-agent.sh
+
+# Or specify a model explicitly
+docker exec nginx-proxy-manager bash /tmp/setup-agent.sh llama3.1:8b
 ```
 
 ---
@@ -264,26 +271,14 @@ To offload LLM inference to an NVIDIA GPU, follow these steps **inside WSL 2**
    docker run --rm --gpus all nvidia/cuda:12.6.0-base-ubuntu22.04 nvidia-smi
    ```
 
-3. **Enable the GPU block in `docker-compose.yml`**
-
-   Uncomment the `deploy.resources.reservations` block under the `ollama`
-   service:
-
-   ```yaml
-   deploy:
-     resources:
-       reservations:
-         devices:
-           - driver: nvidia
-             count: all
-             capabilities: [gpu]
-   ```
-
-4. Restart the stack:
+3. **Start the stack with GPU enabled** using the GPU override file:
 
    ```bash
-   docker compose up -d ollama
+   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
    ```
+
+   Alternatively, uncomment the `deploy.resources.reservations` block in
+   `docker-compose.yml` directly.
 
 ---
 
@@ -292,6 +287,7 @@ To offload LLM inference to an NVIDIA GPU, follow these steps **inside WSL 2**
 ```
 meetstack/
 ├── docker-compose.yml        # Single compose file for all services
+├── docker-compose.gpu.yml    # GPU override — adds NVIDIA passthrough
 ├── .env.example              # Template — copy to .env and fill in secrets
 ├── .gitignore
 ├── README.md
