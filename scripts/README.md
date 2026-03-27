@@ -32,3 +32,25 @@ bash scripts/pull-model.sh
 # Pull a specific model
 bash scripts/pull-model.sh phi3:mini
 ```
+
+### `update-stack.sh` / `update-stack.ps1`
+
+Pulls latest images for all services, recreates containers, waits for
+health checks, and prunes old images to free disk space.
+
+```bash
+# CPU-only update
+bash scripts/update-stack.sh
+
+# With GPU overlay
+bash scripts/update-stack.sh --gpu
+
+# Preview without changes
+bash scripts/update-stack.sh --dry-run
+```
+
+PowerShell:
+```powershell
+.\scripts\update-stack.ps1 -Gpu
+.\scripts\update-stack.ps1 -DryRun
+```
