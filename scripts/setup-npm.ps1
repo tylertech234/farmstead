@@ -1,12 +1,23 @@
 # Setup Nginx Proxy Manager proxy hosts for all meetstack services
 param(
-    [string]$NpmUrl = "http://localhost:81"
+    [string]$NpmUrl = "http://localhost:${env:NPM_ADMIN_PORT}",
+    [string]$Email,
+    [string]$Password
 )
+
+# Load .env defaults for port if not set
+if (-not $env:NPM_ADMIN_PORT) { $NpmUrl = "http://localhost:8181" }
 
 Write-Host "=== Setting up Nginx Proxy Manager ===" -ForegroundColor Cyan
 
+if (-not $Email) { $Email = Read-Host "NPM admin email" }
+if (-not $Password) {
+    $secPw = Read-Host "NPM admin password" -AsSecureString
+    $Password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($secPw))
+}
+
 # Login
-$loginBody = @{identity="admin@example.com"; secret="changeme"} | ConvertTo-Json -Compress
+$loginBody = @{identity=$Email; secret=$Password} | ConvertTo-Json -Compress
 $loginResp = Invoke-WebRequest -Uri "$NpmUrl/api/tokens" -Method Post -Body $loginBody -ContentType "application/json" -UseBasicParsing -ErrorAction SilentlyContinue
 if (-not $loginResp -or $loginResp.StatusCode -ne 200) {
     Write-Host "ERROR: Could not login to NPM. Is it running?" -ForegroundColor Red
@@ -21,7 +32,8 @@ $services = @(
     @{domain="chat.localhost"; host="open-webui"; port=8080},
     @{domain="tasks.localhost"; host="vikunja"; port=3456},
     @{domain="wiki.localhost"; host="wikijs"; port=3000},
-    @{domain="calendar.localhost"; host="radicale"; port=5232}
+    @{domain="calendar.localhost"; host="radicale"; port=5232},
+    @{domain="whisper.localhost"; host="whisper"; port=9000}
 )
 
 foreach ($svc in $services) {
@@ -53,9 +65,10 @@ foreach ($svc in $services) {
 }
 
 Write-Host "`nProxy hosts configured. Access services at:" -ForegroundColor Cyan
-Write-Host "  NPM Admin:  http://localhost:81"
+Write-Host "  NPM Admin:  $NpmUrl"
 Write-Host "  n8n:        http://n8n.localhost"
 Write-Host "  Open WebUI: http://chat.localhost"
 Write-Host "  Vikunja:    http://tasks.localhost"
 Write-Host "  Wiki.js:    http://wiki.localhost"
 Write-Host "  Radicale:   http://calendar.localhost"
+Write-Host "  Whisper:    http://whisper.localhost"
