@@ -4,8 +4,6 @@ networks:
 
 volumes:
   n8n_data:
-  ollama_data:
-  open_webui_data:
   vikunja_db_data:
   vikunja_files_data:
   wikijs_db_data:
@@ -18,7 +16,7 @@ volumes:
 services:
   # ─── n8n ────────────────────────────────────────────────────────────────────
   n8n:
-    image: n8nio/n8n:2.13.4
+    image: n8nio/n8n:latest
     container_name: n8n
     restart: unless-stopped
     expose:
@@ -44,7 +42,7 @@ services:
 
   # ─── Ollama ─────────────────────────────────────────────────────────────────
   ollama:
-    image: ollama/ollama:0.18.3
+    image: ollama/ollama:latest
     container_name: ollama
     restart: unless-stopped
     expose:
@@ -53,7 +51,7 @@ services:
       - TZ=${TZ}
       - OLLAMA_MODEL=${OLLAMA_MODEL}
     volumes:
-      - ollama_data:/root/.ollama
+      - ${OLLAMA_DATA_PATH:-/mnt/data/ollama}:/root/.ollama
       - ./services/ollama:/etc/ollama
     healthcheck:
       test: ["CMD", "ollama", "list"]
@@ -74,7 +72,7 @@ services:
 
   # ─── Open WebUI ─────────────────────────────────────────────────────────────
   open-webui:
-    image: ghcr.io/open-webui/open-webui:0.8.12
+    image: ghcr.io/open-webui/open-webui:latest
     container_name: open-webui
     restart: unless-stopped
     expose:
@@ -83,7 +81,7 @@ services:
       - TZ=${TZ}
       - OLLAMA_BASE_URL=http://ollama:11434
     volumes:
-      - open_webui_data:/app/backend/data
+      - ${OPEN_WEBUI_DATA_PATH:-/mnt/data/open-webui}:/app/backend/data
       - ./services/open-webui:/app/backend/config
     healthcheck:
       test: ["CMD-SHELL", "curl -fsSL http://localhost:8080/health || exit 1"]
@@ -99,7 +97,7 @@ services:
 
   # ─── Vikunja (database) ─────────────────────────────────────────────────────
   vikunja-db:
-    image: mariadb:11.8
+    image: mariadb:11
     container_name: vikunja-db
     restart: unless-stopped
     environment:
@@ -121,11 +119,12 @@ services:
 
   # ─── Vikunja ────────────────────────────────────────────────────────────────
   vikunja:
-    image: vikunja/vikunja:2.2.2
+    image: vikunja/vikunja:latest
     container_name: vikunja
     restart: unless-stopped
     expose:
       - "3456"
+    user: "1000:1000"
     environment:
       - TZ=${TZ}
       - VIKUNJA_DATABASE_HOST=vikunja-db
@@ -173,7 +172,7 @@ services:
 
   # ─── Wiki.js ────────────────────────────────────────────────────────────────
   wikijs:
-    image: ghcr.io/requarks/wiki:2.5.312
+    image: ghcr.io/requarks/wiki:2
     container_name: wikijs
     restart: unless-stopped
     expose:
@@ -203,7 +202,7 @@ services:
 
   # ─── Radicale (CalDAV calendar) ────────────────────────────────────────────
   radicale:
-    image: tomsquest/docker-radicale:3.6.1.0
+    image: tomsquest/docker-radicale:latest
     container_name: radicale
     restart: unless-stopped
     expose:
@@ -229,7 +228,7 @@ services:
 
   # ─── Whisper (speech-to-text) ───────────────────────────────────────────────
   whisper:
-    image: onerahmet/openai-whisper-asr-webservice:v1.9.1
+    image: onerahmet/openai-whisper-asr-webservice:latest
     container_name: whisper
     restart: unless-stopped
     expose:
@@ -251,7 +250,7 @@ services:
 
   # ─── Nginx Proxy Manager ────────────────────────────────────────────────────
   nginx-proxy-manager:
-    image: jc21/nginx-proxy-manager:2.14.0
+    image: jc21/nginx-proxy-manager:latest
     container_name: nginx-proxy-manager
     restart: unless-stopped
     ports:

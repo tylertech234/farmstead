@@ -1,0 +1,26 @@
+title: Farmstead
+description: Home Server Dashboard
+theme: dark
+color: slate
+headerStyle: clean
+target: _blank
+
+layout:
+  Monitoring:
+    style: row
+    columns: 2
+  Media & Files:
+    style: row
+    columns: 3
+  Productivity:
+    style: row
+    columns: 3
+  Knowledge & AI:
+    style: row
+    columns: 4
+  Home & IoT:
+    style: row
+    columns: 2
+  Development:
+    style: row
+    columns: 2

@@ -50,6 +50,7 @@ bash scripts/update-stack.sh --dry-run
 ```
 
 PowerShell:
+
 ```powershell
 .\scripts\update-stack.ps1 -Gpu
 .\scripts\update-stack.ps1 -DryRun
@@ -65,3 +66,44 @@ unused space. WSL2 VHDXs grow when data is written but never auto-shrink.
 # From an elevated PowerShell:
 .\scripts\compact-docker-vhdx.ps1
 ```
+
+### `Prepare-MeetstackInstaller.ps1`
+
+Wrapper for `.working\scripts\Prepare-MeetstackInstaller.ps1` so you can run
+installer preparation from repo root.
+
+```powershell
+.\scripts\Prepare-MeetstackInstaller.ps1
+
+# Use x86_64 optimization profile for target machine
+.\scripts\Prepare-MeetstackInstaller.ps1 -TargetArchitecture x86_64
+```
+
+### `Configure-MeetstackServices.ps1`
+
+Wrapper for `.working\scripts\Configure-MeetstackServices.ps1`. Opens an
+interactive configurator to enable/disable services, optional add-ons, and
+common stack settings used by the autoinstall flow.
+
+```powershell
+.\scripts\Configure-MeetstackServices.ps1
+
+# Use defaults without prompts
+.\scripts\Configure-MeetstackServices.ps1 -NonInteractive
+
+# Pick target profile explicitly
+.\scripts\Configure-MeetstackServices.ps1 -TargetArchitecture x86_64
+```
+
+Optional services available in configurator prompts:
+
+- watchtower
+- uptime-kuma
+- gitea
+- code-server
+- joplin-server (with joplin-db)
+- syncthing
+
+Required core behavior:
+
+- nginx-proxy-manager remains enabled as mandatory infrastructure.

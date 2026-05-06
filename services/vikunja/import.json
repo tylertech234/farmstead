@@ -1,0 +1,327 @@
+{
+  "version": "0.22.0",
+  "lists": [
+    {
+      "title": "🌿 Outdoor & Property",
+      "color": "#4caf50",
+      "tasks": [
+        {
+          "title": "Mulch around peach tree",
+          "description": "Apply 3-4\" of mulch around the drip line to retain moisture and suppress weeds. Keep mulch 6\" away from trunk to prevent rot.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Buy mulch (2-3 cubic yards)", "done": false},
+            {"title": "Clear existing weeds around drip line", "done": false},
+            {"title": "Apply 3-4\" layer around drip line", "done": false},
+            {"title": "Ensure 6\" gap between mulch and trunk", "done": false}
+          ]
+        },
+        {
+          "title": "Clear brush around fence lines",
+          "description": "Remove overgrown brush along all fence lines to maintain access, prevent fence damage, and reduce fire risk.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Clear north fence line", "done": false},
+            {"title": "Clear south fence line", "done": false},
+            {"title": "Clear east fence line", "done": false},
+            {"title": "Clear west fence line", "done": false},
+            {"title": "Dispose of brush (burn pile or haul off)", "done": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "🔨 Garage & Workshop",
+      "color": "#ff9800",
+      "tasks": [
+        {
+          "title": "Clean out garage",
+          "description": "Full cleanout — sort items into keep, donate, trash. Prerequisite for all finish work.",
+          "done": false,
+          "priority": 4,
+          "subtasks": [
+            {"title": "Sort all items (keep / donate / trash)", "done": false},
+            {"title": "Haul out trash", "done": false},
+            {"title": "Donate or list unwanted items", "done": false},
+            {"title": "Sweep and clean floor", "done": false}
+          ]
+        },
+        {
+          "title": "Clean out workshop",
+          "description": "Organize and clean workshop space. Clear workbenches and floor.",
+          "done": false,
+          "priority": 3,
+          "subtasks": [
+            {"title": "Clear all workbench surfaces", "done": false},
+            {"title": "Organize tools by category", "done": false},
+            {"title": "Dispose of scrap material", "done": false},
+            {"title": "Sweep and clean floor", "done": false}
+          ]
+        },
+        {
+          "title": "Finish interior of garage",
+          "description": "Complete interior finish work — drywall, paint, trim. Blocked by cleanout.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Hang and tape drywall", "done": false},
+            {"title": "Mud and sand", "done": false},
+            {"title": "Prime and paint walls", "done": false},
+            {"title": "Install trim and baseboards", "done": false}
+          ]
+        },
+        {
+          "title": "Run new power to garage",
+          "description": "Run dedicated circuit or subpanel to support mini split, tools, and future EV charging. Do before mini split install.",
+          "done": false,
+          "priority": 4,
+          "subtasks": [
+            {"title": "Plan circuit requirements (loads, panel capacity)", "done": false},
+            {"title": "Pull permit if required", "done": false},
+            {"title": "Run conduit from main panel", "done": false},
+            {"title": "Pull wire and install breaker", "done": false},
+            {"title": "Install outlets and subpanel", "done": false},
+            {"title": "Schedule inspection if required", "done": false}
+          ]
+        },
+        {
+          "title": "Install mini split in garage",
+          "description": "Install ductless mini split for heating and cooling the garage/workshop. Requires new power circuit first.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Get quotes from HVAC contractors", "done": false},
+            {"title": "Calculate BTU requirements for space", "done": false},
+            {"title": "Purchase unit", "done": false},
+            {"title": "Confirm electrical rough-in is complete", "done": false},
+            {"title": "Schedule HVAC installation", "done": false},
+            {"title": "Test unit operation", "done": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "🏠 Home Renovation",
+      "color": "#2196f3",
+      "tasks": [
+        {
+          "title": "Run new power to kitchen",
+          "description": "Kitchen needs dedicated circuits: 2x 20A for countertops, 20A for dishwasher, 40-50A for range. Do before cabinets and appliances.",
+          "done": false,
+          "priority": 4,
+          "subtasks": [
+            {"title": "Plan all kitchen circuits", "done": false},
+            {"title": "Pull permit", "done": false},
+            {"title": "Run rough-in wiring", "done": false},
+            {"title": "Install outlets and breakers", "done": false},
+            {"title": "Schedule inspection", "done": false}
+          ]
+        },
+        {
+          "title": "Install kitchen cabinets",
+          "description": "Full kitchen cabinet installation. Measure carefully — order lead time can be 4-8 weeks. Depends on power rough-in.",
+          "done": false,
+          "priority": 3,
+          "subtasks": [
+            {"title": "Measure kitchen and create cabinet layout", "done": false},
+            {"title": "Select cabinet style and order", "done": false},
+            {"title": "Demo existing cabinets if needed", "done": false},
+            {"title": "Mark studs and install ledger board", "done": false},
+            {"title": "Install upper cabinets", "done": false},
+            {"title": "Install lower cabinets", "done": false},
+            {"title": "Install doors and hardware", "done": false}
+          ]
+        },
+        {
+          "title": "Install appliances",
+          "description": "Install range, dishwasher, refrigerator, and hood. Depends on cabinets and power circuits being done.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Verify rough-in locations for gas/electric/water", "done": false},
+            {"title": "Install range/oven", "done": false},
+            {"title": "Install dishwasher", "done": false},
+            {"title": "Install refrigerator", "done": false},
+            {"title": "Install range hood", "done": false},
+            {"title": "Test all appliances", "done": false}
+          ]
+        },
+        {
+          "title": "Finish floors",
+          "description": "Install finished flooring throughout remaining areas. Do after walls are complete to avoid damage.",
+          "done": false,
+          "priority": 3,
+          "subtasks": [
+            {"title": "Measure and calculate square footage per room", "done": false},
+            {"title": "Select and order flooring material", "done": false},
+            {"title": "Prep subfloor (level, clean, dry)", "done": false},
+            {"title": "Install flooring", "done": false},
+            {"title": "Install transitions and trim", "done": false}
+          ]
+        },
+        {
+          "title": "Finish utility room",
+          "description": "Complete utility room — drywall, paint, shelving, and verify all utility connections.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Hang and finish drywall", "done": false},
+            {"title": "Paint", "done": false},
+            {"title": "Install shelving and storage", "done": false},
+            {"title": "Verify water, gas, and electric connections", "done": false}
+          ]
+        },
+        {
+          "title": "Fix sink fixtures in bathroom",
+          "description": "Replace or repair bathroom sink faucet, handles, and drain fixtures.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Identify all fixtures to replace", "done": false},
+            {"title": "Purchase replacement fixtures", "done": false},
+            {"title": "Shut off water supply", "done": false},
+            {"title": "Remove old fixtures", "done": false},
+            {"title": "Install new fixtures", "done": false},
+            {"title": "Turn water back on and test for leaks", "done": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "🤖 Tech & Computing",
+      "color": "#9c27b0",
+      "tasks": [
+        {
+          "title": "Build local AI machine (Axios)",
+          "description": "Dedicated AI inference machine with NVIDIA GPU. Will run Ollama, ChromaDB, and ComfyUI — serving as the RAG/embedding backend for the farm network via farmstead.",
+          "done": false,
+          "priority": 3,
+          "subtasks": [
+            {"title": "Finalize parts list (CPU, GPU, RAM, NVMe)", "done": false},
+            {"title": "Order components", "done": false},
+            {"title": "Build PC", "done": false},
+            {"title": "Install Ubuntu Server 24.04", "done": false},
+            {"title": "Install NVIDIA drivers and container toolkit", "done": false},
+            {"title": "Deploy Docker stack (Ollama, ChromaDB, ComfyUI)", "done": false},
+            {"title": "Point Open-WebUI on farmstead to Axios Ollama", "done": false},
+            {"title": "Test RAG pipeline with wiki documents", "done": false}
+          ]
+        },
+        {
+          "title": "Build microATX machine for pinball cabinet",
+          "description": "Small form factor PC to power a virtual pinball cabinet with Visual Pinball X and PinballY front-end.",
+          "done": false,
+          "priority": 1,
+          "subtasks": [
+            {"title": "Choose case and form factor", "done": false},
+            {"title": "Source parts (GPU for DMD + playfield output)", "done": false},
+            {"title": "Build machine", "done": false},
+            {"title": "Install Windows + Visual Pinball X", "done": false},
+            {"title": "Set up PinballY front-end", "done": false},
+            {"title": "Download and test tables", "done": false},
+            {"title": "Mount in cabinet", "done": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "🕹️ Retro & Arcade",
+      "color": "#f44336",
+      "tasks": [
+        {
+          "title": "Rebuild Mountain Dew arcade cabinet",
+          "description": "Full restoration — new monitor, reconditioned cabinet exterior, fresh MAME/RetroPie install with proper artwork.",
+          "done": false,
+          "priority": 1,
+          "subtasks": [
+            {"title": "Assess current condition of cabinet", "done": false},
+            {"title": "Source replacement monitor (CRT or LCD)", "done": false},
+            {"title": "Recondition and repaint cabinet exterior", "done": false},
+            {"title": "Install Raspberry Pi or PC for MAME", "done": false},
+            {"title": "Configure controls and wiring harness", "done": false},
+            {"title": "Configure MAME/EmulationStation", "done": false},
+            {"title": "Source or print replacement artwork and bezel", "done": false}
+          ]
+        },
+        {
+          "title": "Setup Retro CRT open frame arcade",
+          "description": "Open-frame arcade setup using a CRT TV with MiSTer FPGA or Pi for authentic scanline output.",
+          "done": false,
+          "priority": 1,
+          "subtasks": [
+            {"title": "Source CRT TV (consumer or PVM)", "done": false},
+            {"title": "Build or source open frame stand", "done": false},
+            {"title": "Choose platform (MiSTer FPGA vs Pi vs PC)", "done": false},
+            {"title": "Install and configure software", "done": false},
+            {"title": "Wire arcade controls", "done": false},
+            {"title": "Calibrate picture and test scanlines", "done": false}
+          ]
+        },
+        {
+          "title": "Setup capture card and VCR for digitization",
+          "description": "Set up capture workflow using a capture card and VCR. Prerequisite for VHS conversion project.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Source or verify capture card (analog input)", "done": false},
+            {"title": "Test VCR playback quality — clean heads if needed", "done": false},
+            {"title": "Connect VCR → capture card → PC", "done": false},
+            {"title": "Install and configure OBS or VirtualDub2", "done": false},
+            {"title": "Test capture with a sample tape", "done": false},
+            {"title": "Define output format and storage path on farmstead", "done": false}
+          ]
+        },
+        {
+          "title": "Convert VHS tapes to digital",
+          "description": "Capture and archive all VHS tapes. Store on farmstead or external. Blocked by capture card setup.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Catalog all tapes (label, content, estimated condition)", "done": false},
+            {"title": "Prioritize tapes (irreplaceable home video first)", "done": false},
+            {"title": "Capture each tape", "done": false},
+            {"title": "Encode to archival format (H.265/MKV)", "done": false},
+            {"title": "Organize and name files", "done": false},
+            {"title": "Back up to farmstead /mnt/data", "done": false},
+            {"title": "Store original tapes in protective cases", "done": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "⚡ Electronics & IoT",
+      "color": "#00bcd4",
+      "tasks": [
+        {
+          "title": "Test solar battery with ESP32",
+          "description": "Prototype a solar-charged ESP32 node. Goal: prove out solar + battery for wireless farm sensors. Log data back to farmstead via MQTT.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Gather components (ESP32, TP4056, LiPo or 18650, small solar panel)", "done": false},
+            {"title": "Wire solar panel → charge controller → battery → ESP32", "done": false},
+            {"title": "Write firmware to measure and report voltage + uptime", "done": false},
+            {"title": "Deploy outside and test over 24-48 hours", "done": false},
+            {"title": "Send data to farmstead via MQTT → n8n", "done": false}
+          ]
+        },
+        {
+          "title": "Get LoRa device and test with solar light kit",
+          "description": "First step toward a farm-wide sensor network. Test LoRa range and solar power viability across the property.",
+          "done": false,
+          "priority": 2,
+          "subtasks": [
+            {"title": "Order LoRa module (TTGO LoRa32 or Heltec WiFi LoRa 32)", "done": false},
+            {"title": "Wire to solar light kit as power source", "done": false},
+            {"title": "Flash LoRa test firmware", "done": false},
+            {"title": "Set up LoRa gateway or second receiver node", "done": false},
+            {"title": "Test transmission range across property", "done": false},
+            {"title": "Document range results and plan sensor payload", "done": false}
+          ]
+        }
+      ]
+    }
+  ]
+}

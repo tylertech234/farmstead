@@ -1,0 +1,113 @@
+- Monitoring:
+    - Uptime Kuma:
+        icon: uptime-kuma.png
+        href: http://farmstead.local:3001
+        description: Service monitoring
+        server: local
+        container: uptime-kuma
+    - Nginx Proxy Manager:
+        icon: nginx-proxy-manager.png
+        href: http://farmstead.local:81
+        description: Reverse proxy admin
+        server: local
+        container: nginx-proxy-manager
+
+- Media & Files:
+    - Immich:
+        icon: immich.png
+        href: http://farmstead.local:2283
+        description: Photo & video library
+        server: local
+        container: immich
+    - Paperless-ngx:
+        icon: paperless-ngx.png
+        href: http://farmstead.local:8000
+        description: Document management
+        server: local
+        container: paperless-ngx
+    - Syncthing:
+        icon: syncthing.png
+        href: http://farmstead.local:8384
+        description: File synchronization
+        server: local
+        container: syncthing
+
+- Productivity:
+    - Vikunja:
+        icon: vikunja.png
+        href: http://farmstead.local:3456
+        description: Task & project management
+        server: local
+        container: vikunja
+    - Mealie:
+        icon: mealie.png
+        href: http://farmstead.local:9925
+        description: Recipe manager
+        server: local
+        container: mealie
+    - Grocy:
+        icon: grocy.png
+        href: http://farmstead.local:9283
+        description: Grocery & home inventory
+        server: local
+        container: grocy
+    - Gitea:
+        icon: gitea.png
+        href: http://farmstead.local:3002
+        description: Git repositories
+        server: local
+        container: gitea
+    - Joplin:
+        icon: joplin.png
+        href: http://farmstead.local:22300
+        description: Note taking
+        server: local
+        container: joplin-server
+    - Radicale:
+        icon: radicale.png
+        href: http://farmstead.local:5232
+        description: Calendar & contacts (CalDAV)
+        server: local
+        container: radicale
+
+- Knowledge & AI:
+    - Wiki.js:
+        icon: wikijs.png
+        href: http://farmstead.local:3003
+        description: Team wiki & knowledge base
+        server: local
+        container: wikijs
+    - Open-WebUI:
+        icon: ollama.png
+        href: http://farmstead.local:8080
+        description: Local AI chat (Ollama)
+        server: local
+        container: open-webui
+    - n8n:
+        icon: n8n.png
+        href: http://farmstead.local:5678
+        description: Workflow automation
+        server: local
+        container: n8n
+    - Whisper:
+        icon: si-openai
+        href: http://farmstead.local:9000
+        description: Speech to text
+        server: local
+        container: whisper
+
+- Home & IoT:
+    - Home Assistant:
+        icon: home-assistant.png
+        href: http://farmstead.local:8123
+        description: Home automation
+        server: local
+        container: home-assistant
+
+- Development:
+    - Code Server:
+        icon: code-server.png
+        href: http://farmstead.local:8443
+        description: VS Code in browser
+        server: local
+        container: code-server

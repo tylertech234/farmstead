@@ -20,3 +20,6 @@ desktop.ini
 *.swp
 *.swo
 *~
+
+# Local deployment working files (secrets, USB build artifacts)
+.working/
