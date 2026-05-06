@@ -3,7 +3,7 @@
 .SYNOPSIS
     Export all Farmstead secrets to a secure backup archive.
 .DESCRIPTION
-    Wrapper for .working\scripts\Export-MeetstackSecrets.ps1
+    Wrapper for the legacy secret-export script in .working.
 #>
 
 param(

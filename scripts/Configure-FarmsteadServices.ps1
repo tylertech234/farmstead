@@ -4,7 +4,8 @@
     Wrapper for .working service configurator.
 .DESCRIPTION
     Allows running service configuration from repo root:
-      .\scripts\Configure-MeetstackServices.ps1
+      .\scripts\Configure-FarmsteadServices.ps1
+    It forwards all arguments to the legacy service configurator in .working.
 #>
 
 [CmdletBinding()]

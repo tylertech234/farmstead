@@ -1,4 +1,4 @@
-# Homesteady Changes from Meetstack
+# Homesteady Changes from Farmstead
 
 **Date:** May 2, 2026  
 **Fork Purpose:** Farm-optimized infrastructure for isolated VLAN deployment
@@ -44,7 +44,7 @@ These services are NOT included in homesteady because they're either:
 
 ## Services Retained (22)
 
-All other meetstack services are included because they provide farm-specific value:
+All other Farmstead services are included because they provide farm-specific value:
 
 ### Core Services (7)
 - ✅ nginx-proxy-manager - SSL and reverse proxy
@@ -76,7 +76,7 @@ All other meetstack services are included because they provide farm-specific val
 
 ### Script Updates
 
-**Configure-MeetstackServices.ps1:**
+**Configure-FarmsteadServices.ps1:**
 - Removed from `$coreServices`: radicale
 - Removed from `$addons`: jellyfin, vaultwarden, adguardhome, freshrss, mongodb
 - Removed Set-IfMissing calls for removed services
@@ -91,7 +91,7 @@ All other meetstack services are included because they provide farm-specific val
 
 ### Resource Impact
 
-**Before (Meetstack - 35 containers):**
+**Before (Farmstead - 35 containers):**
 - RAM: 10-12GB base + removed services (~2GB) = 12-14GB
 - Services: 8 core + 20 optional + 7 dependencies
 
@@ -106,9 +106,9 @@ All other meetstack services are included because they provide farm-specific val
 
 ## Network Architecture Changes
 
-### Meetstack (Original)
+### Farmstead (Original)
 ```
-Internet ← → Home Network ← → Meetstack Server
+Internet ← → Home Network ← → Farmstead Server
                               ├─ All services
                               └─ Self-contained
 ```
@@ -132,7 +132,7 @@ Internet ← → pfSense/Core Switch
 
 ## Deployment Differences
 
-### Meetstack
+### Farmstead
 - General-purpose homelab
 - Single network
 - All services local
@@ -147,7 +147,7 @@ Internet ← → pfSense/Core Switch
 
 ## Use Case Differences
 
-### Meetstack Use Cases
+### Farmstead Use Cases
 - General productivity
 - Media consumption
 - Password management
@@ -178,7 +178,7 @@ Modified files:
 
 ## Migration Path
 
-If you want to convert an existing meetstack installation to homesteady:
+If you want to convert an existing Farmstead installation to homesteady:
 
 1. **Backup all data** from services you're removing:
    - Vaultwarden: Export vault, move to house instance
@@ -195,12 +195,12 @@ If you want to convert an existing meetstack installation to homesteady:
 3. **Update configuration:**
    ```powershell
    .\.working\scripts\Generate-ProductionSecrets.ps1 -Architecture x86_64
-   .\scripts\Prepare-MeetstackInstaller.ps1 -TargetArchitecture x86_64 -NonInteractiveServiceConfig
+   .\scripts\Prepare-FarmsteadInstaller.ps1 -TargetArchitecture x86_64 -NonInteractiveServiceConfig
    ```
 
 4. **Apply new compose file:**
    ```bash
-   cd /opt/meetstack
+   cd /opt/farmstead
    docker compose down
    docker compose -f docker-compose.yml -f docker-compose.autoinstall.override.yml up -d
    ```
@@ -211,7 +211,7 @@ If you want to convert an existing meetstack installation to homesteady:
 
 ## Future Fork Maintenance
 
-### When to Pull from Meetstack Upstream
+### When to Pull from Farmstead Upstream
 - Security updates to Docker images
 - Bug fixes in scripts
 - New service additions that make sense for farm use
@@ -229,7 +229,7 @@ If you want to convert an existing meetstack installation to homesteady:
 
 ## Summary
 
-**Homesteady is NOT a superset or replacement for meetstack.**
+**Homesteady is NOT a superset or replacement for Farmstead.**
 
 It's a **specialized fork** optimized for:
 - Farm/agricultural operations

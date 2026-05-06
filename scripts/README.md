@@ -67,32 +67,53 @@ unused space. WSL2 VHDXs grow when data is written but never auto-shrink.
 .\scripts\compact-docker-vhdx.ps1
 ```
 
-### `Prepare-MeetstackInstaller.ps1`
+### `Prepare-FarmsteadInstaller.ps1`
 
-Wrapper for `.working\scripts\Prepare-MeetstackInstaller.ps1` so you can run
-installer preparation from repo root.
+Wrapper for the legacy installer-preparation script in `.working` so you can
+run installer preparation from repo root.
 
 ```powershell
-.\scripts\Prepare-MeetstackInstaller.ps1
+.\scripts\Prepare-FarmsteadInstaller.ps1
 
 # Use x86_64 optimization profile for target machine
-.\scripts\Prepare-MeetstackInstaller.ps1 -TargetArchitecture x86_64
+.\scripts\Prepare-FarmsteadInstaller.ps1 -TargetArchitecture x86_64
 ```
 
-### `Configure-MeetstackServices.ps1`
+### `Configure-FarmsteadServices.ps1`
 
-Wrapper for `.working\scripts\Configure-MeetstackServices.ps1`. Opens an
-interactive configurator to enable/disable services, optional add-ons, and
-common stack settings used by the autoinstall flow.
+Wrapper for the legacy service configurator in `.working`. Opens an interactive
+configurator to enable/disable services, optional add-ons, and common stack
+settings used by the autoinstall flow.
 
 ```powershell
-.\scripts\Configure-MeetstackServices.ps1
+.\scripts\Configure-FarmsteadServices.ps1
 
 # Use defaults without prompts
-.\scripts\Configure-MeetstackServices.ps1 -NonInteractive
+.\scripts\Configure-FarmsteadServices.ps1 -NonInteractive
 
 # Pick target profile explicitly
-.\scripts\Configure-MeetstackServices.ps1 -TargetArchitecture x86_64
+.\scripts\Configure-FarmsteadServices.ps1 -TargetArchitecture x86_64
+```
+
+### `Export-FarmsteadSecrets.ps1`
+
+Wrapper for the legacy secret-export script in `.working` to create a local
+backup archive of generated Farmstead credentials and deployment material.
+
+```powershell
+.\scripts\Export-FarmsteadSecrets.ps1
+```
+
+### `Build-FarmsteadUSB.ps1`
+
+Wrapper for the legacy USB builder in `.working` to create the autoinstall USB
+media from the repository root.
+
+```powershell
+.\scripts\Build-FarmsteadUSB.ps1
+
+# Build or refresh a specific USB target
+.\scripts\Build-FarmsteadUSB.ps1 -RequiredDriveLetter H
 ```
 
 Optional services available in configurator prompts:

@@ -4,7 +4,8 @@
     Wrapper for .working USB builder.
 .DESCRIPTION
     Allows running from repo root:
-      .\scripts\Build-FarmstackUSB.ps1
+      .\scripts\Build-FarmsteadUSB.ps1
+    It forwards all arguments to the legacy USB builder in .working.
 #>
 
 [CmdletBinding()]

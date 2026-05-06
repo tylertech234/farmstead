@@ -4,8 +4,9 @@
     Wrapper for .working installer preparation flow.
 .DESCRIPTION
     Allows running the deployment prep command from repo root as:
-      .\scripts\Prepare-MeetstackInstaller.ps1
-    It forwards all arguments to .working\scripts\Prepare-MeetstackInstaller.ps1.
+      .\scripts\Prepare-FarmsteadInstaller.ps1
+    It forwards all arguments to the legacy installer-preparation script in
+    .working.
 #>
 
 [CmdletBinding()]

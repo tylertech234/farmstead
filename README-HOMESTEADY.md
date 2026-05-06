@@ -1,13 +1,13 @@
 # Homesteady - Farm Infrastructure Stack
 
-**Forked from:** meetstack  
+**Forked from:** Farmstead  
 **Purpose:** Farm/homestead-optimized infrastructure deployment  
 **Target Hardware:** 1L PC (x86_64)  
 **Network:** Separate farm VLAN, isolated from primary home network
 
 ## Overview
 
-Homesteady is a streamlined fork of meetstack, optimized for farm/homestead deployments on resource-constrained hardware. This configuration runs on a 1L PC with 16GB RAM, providing essential data management and automation services for agricultural operations while accessing centralized home services via Tailscale VPN.
+Homesteady is a streamlined fork of Farmstead, optimized for farm/homestead deployments on resource-constrained hardware. This configuration runs on a 1L PC with 16GB RAM, providing essential data management and automation services for agricultural operations while accessing centralized home services via Tailscale VPN.
 
 ## Architecture Philosophy
 
@@ -279,14 +279,14 @@ These services run on the main house server and are accessed via Tailscale:
 .\.working\scripts\Generate-ProductionSecrets.ps1 -Architecture x86_64
 
 # 2. Configure services (non-interactive mode uses optimized defaults)
-.\scripts\Prepare-MeetstackInstaller.ps1 -TargetArchitecture x86_64 -NonInteractiveServiceConfig
+.\scripts\Prepare-FarmsteadInstaller.ps1 -TargetArchitecture x86_64 -NonInteractiveServiceConfig
 
 # 3. Stage to USB drive (requires Administrator PowerShell)
 # Note: This step requires running as Administrator
-# Build-FarmstackUSB.ps1 creates bootable Ubuntu USB with cloud-init config
+# Build-FarmsteadUSB.ps1 creates bootable Ubuntu USB with cloud-init config
 
 # 4. Update USB payload (can be run as regular user)
-.\.working\scripts\Stage-CIDataPayload.ps1 -DriveLetter H -CleanMeetstackTarget
+.\.working\scripts\Stage-CIDataPayload.ps1 -DriveLetter H
 ```
 
 ### First Boot Process
@@ -297,7 +297,7 @@ These services run on the main house server and are accessed via Tailscale:
 4. First boot automation (~20 minutes):
    - Install Docker and Docker Compose
    - Join Tailscale VPN
-   - Clone homesteady to `/opt/meetstack`
+   - Clone homesteady to `/opt/farmstead`
    - Start all 28 containers
 5. Services available at configured ports
 
@@ -358,9 +358,9 @@ These services run on the main house server and are accessed via Tailscale:
 - External drive: Physical backup medium
 - No internet-facing ports (Tailscale only)
 
-## Comparison: Homesteady vs Meetstack
+## Comparison: Homesteady vs Farmstead
 
-| Aspect | Meetstack | Homesteady |
+| Aspect | Farmstead | Homesteady |
 |--------|-----------|------------|
 | **Purpose** | General homelab/productivity | Farm/homestead-specific |
 | **Services** | 35 containers | 28 containers (22% reduction) |
@@ -374,7 +374,7 @@ These services run on the main house server and are accessed via Tailscale:
 
 ## Why Fork?
 
-Homesteady diverged from meetstack for several key reasons:
+Homesteady diverged from Farmstead for several key reasons:
 
 1. **Use Case Specialization**: Farm/homestead operations have unique requirements (photo management for livestock, document scanning for receipts, inventory for seeds/supplies)
 
@@ -405,7 +405,7 @@ Homesteady diverged from meetstack for several key reasons:
 
 ## Links
 
-- **Original Project**: meetstack (main branch)
+- **Original Project**: Farmstead (main branch)
 - **This Fork**: homesteady (farm-optimized branch)
 - **Documentation**: `.working/FARM-VS-HOUSE-ARCHITECTURE.md`
 - **Service Details**: `.working/NEW-SERVICES.md`
@@ -413,11 +413,11 @@ Homesteady diverged from meetstack for several key reasons:
 
 ## Support
 
-This is a personal fork for farm deployment. For the original meetstack project, see the main repository.
+This is a personal fork for farm deployment. For the original Farmstead project, see the main repository.
 
 ## License
 
-Inherits license from meetstack project. Fork maintained for personal farm infrastructure deployment.
+Inherits license from the Farmstead project. Fork maintained for personal farm infrastructure deployment.
 
 ---
 
