@@ -1,4 +1,4 @@
-# Setup Nginx Proxy Manager proxy hosts for all meetstack services
+# Setup Nginx Proxy Manager proxy hosts for all Farmstead services
 param(
     [string]$NpmUrl = "http://localhost:${env:NPM_ADMIN_PORT}",
     [string]$Email,

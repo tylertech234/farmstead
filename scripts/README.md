@@ -17,7 +17,7 @@ Restores a single Docker volume from a tar.gz archive. Prompts for
 confirmation before overwriting data.
 
 ```bash
-bash scripts/restore.sh backups/2024-03-15/n8n_data.tar.gz meetstack_n8n_data
+bash scripts/restore.sh backups/2024-03-15/n8n_data.tar.gz farmstead_n8n_data
 ```
 
 ### `pull-model.sh`

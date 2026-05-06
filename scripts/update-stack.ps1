@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Update the MeetStack Docker Compose stack.
+    Update the Farmstead Docker Compose stack.
 
 .DESCRIPTION
     Pulls latest images, recreates containers, and prunes old images.
@@ -33,7 +33,7 @@ try {
 
     Write-Host ""
     Write-Host "===========================================================" -ForegroundColor Cyan
-    Write-Host "  MeetStack Update" -ForegroundColor Cyan
+    Write-Host "  Farmstead Update" -ForegroundColor Cyan
     Write-Host "===========================================================" -ForegroundColor Cyan
     Write-Host ""
 

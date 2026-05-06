@@ -1,5 +1,5 @@
 #!/bin/bash
-# Create showcase n8n workflows that demonstrate the full MeetStack pipeline
+# Create showcase n8n workflows that demonstrate the full Farmstead pipeline
 # Usage: docker exec nginx-proxy-manager bash /tmp/setup-n8n-showcase.sh
 
 N8N="http://n8n:5678"
@@ -7,7 +7,7 @@ N8N="http://n8n:5678"
 echo "Logging in to n8n..."
 LOGIN_RESP=$(curl -s -D /tmp/n8n-headers.txt -X POST "$N8N/rest/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@meetstack.local","password":"MeetStack2026!"}')
+  -d '{"email":"admin@farmstead.local","password":"Farmstead2026!"}')
 
 echo "$LOGIN_RESP" | grep -q '"id"' && echo "Login successful" || {
   echo "Login failed: $LOGIN_RESP"

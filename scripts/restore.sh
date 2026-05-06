@@ -4,7 +4,7 @@ set -euo pipefail
 # restore.sh — restore a single Docker volume from a tar.gz archive
 #
 # Usage:  bash scripts/restore.sh <archive.tar.gz> <volume_name>
-# Example: bash scripts/restore.sh backups/2024-03-15/n8n_data.tar.gz meetstack_n8n_data
+# Example: bash scripts/restore.sh backups/2024-03-15/n8n_data.tar.gz farmstead_n8n_data
 #
 # WARNING: This will overwrite all data in the target volume.
 
@@ -12,10 +12,10 @@ if [ $# -lt 2 ]; then
   echo "Usage: $0 <archive.tar.gz> <volume_name>"
   echo ""
   echo "Example:"
-  echo "  $0 backups/2024-03-15/n8n_data.tar.gz meetstack_n8n_data"
+  echo "  $0 backups/2024-03-15/n8n_data.tar.gz farmstead_n8n_data"
   echo ""
   echo "Available volumes:"
-  docker volume ls --format '  {{.Name}}' | grep -i meetstack || echo "  (none found)"
+  docker volume ls --format '  {{.Name}}' || echo "  (none found)"
   exit 1
 fi
 

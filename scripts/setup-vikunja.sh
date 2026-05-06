@@ -7,13 +7,13 @@ VIK="http://vikunja:3456/api/v1"
 # Register first user
 curl -s -X POST "$VIK/register" \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","email":"admin@meetstack.local","password":"MeetStack2026!"}' > /dev/null
+  -d '{"username":"admin","email":"admin@farmstead.local","password":"Farmstead2026!"}' > /dev/null
 echo "Registered admin user"
 
 # Login
 TOKEN=$(curl -s -X POST "$VIK/login" \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"MeetStack2026!"}' \
+  -d '{"username":"admin","password":"Farmstead2026!"}' \
   | grep -o '"token":"[^"]*' | cut -d'"' -f4)
 
 if [ -z "$TOKEN" ]; then

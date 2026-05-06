@@ -1,4 +1,4 @@
-# meetstack
+# farmstead
 
 A self-hosted productivity and collaboration stack launched from a single
 `docker-compose.yml` and managed through Nginx Proxy Manager. Designed to run
@@ -19,7 +19,8 @@ on a laptop, desktop, or single-board computer (e.g. Raspberry Pi 5).
 | **Whisper** | Speech-to-text transcription |
 | **Nginx Proxy Manager** | Reverse proxy & SSL termination |
 
-All services share a single internal Docker network (`meetstack`). Only Nginx
+All services share a single internal Docker network (`meetstack`, retained for
+compatibility). Only Nginx
 Proxy Manager exposes ports to the host, keeping everything else off the public
 network interface.
 
@@ -93,8 +94,8 @@ detailed workflow designs.
 
 ```powershell
 # 1. Clone the repository
-git clone https://github.com/tylertech234/meetstack.git
-cd meetstack
+git clone https://github.com/tylertech234/farmstead.git
+cd farmstead
 
 # 2. Run the bootstrap script — generates .env, starts containers,
 #    seeds all services with test data, and pulls the LLM model.
@@ -105,7 +106,7 @@ The bootstrap script will:
 - Copy `.env.example` → `.env` with freshly generated passwords
 - Start all 10 containers and wait for them to become healthy
 - Configure Nginx Proxy Manager with proxy hosts for every service
-- Create an admin account (`admin@meetstack.local` / `MeetStack2026!`) on
+- Create an admin account (`admin@farmstead.local` / `Farmstead2026!`) on
   n8n, Open WebUI, Wiki.js, and Vikunja
 - Seed Wiki.js with starter pages, Vikunja with sample projects/tasks,
   and n8n with demo workflows
@@ -116,8 +117,8 @@ The bootstrap script will:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/tylertech234/meetstack.git
-cd meetstack
+git clone https://github.com/tylertech234/farmstead.git
+cd farmstead
 
 # 2. Create your local environment file
 cp .env.example .env
@@ -143,10 +144,10 @@ available through Nginx Proxy Manager using `.localhost` domains:
 | Service | URL | Default Login |
 |---|---|---|
 | **Nginx Proxy Manager** admin | <http://localhost:8181> | `admin@example.com` / `changeme` (change on first login) |
-| **n8n** | <http://n8n.localhost> | `admin@meetstack.local` / `MeetStack2026!` |
-| **Open WebUI** (Ollama chat) | <http://chat.localhost> | `admin@meetstack.local` / `MeetStack2026!` |
-| **Vikunja** (tasks) | <http://tasks.localhost> | `admin@meetstack.local` / `MeetStack2026!` |
-| **Wiki.js** | <http://wiki.localhost> | `admin@meetstack.local` / `MeetStack2026!` |
+| **n8n** | <http://n8n.localhost> | `admin@farmstead.local` / `Farmstead2026!` |
+| **Open WebUI** (Ollama chat) | <http://chat.localhost> | `admin@farmstead.local` / `Farmstead2026!` |
+| **Vikunja** (tasks) | <http://tasks.localhost> | `admin@farmstead.local` / `Farmstead2026!` |
+| **Wiki.js** | <http://wiki.localhost> | `admin@farmstead.local` / `Farmstead2026!` |
 | **Radicale** (CalDAV) | <http://calendar.localhost> | No auth (local use) |
 | **Ollama API** | internal only | Consumed by Open WebUI & n8n |
 | **Whisper API** | internal only | Consumed by n8n only |
@@ -160,7 +161,7 @@ available through Nginx Proxy Manager using `.localhost` domains:
 
 ## AI Agent Infrastructure
 
-MeetStack includes a context-aware AI agent that can search the wiki, fetch
+Farmstead includes a context-aware AI agent that can search the wiki, fetch
 tasks, and generate answers using a local LLM. The agent pipeline runs entirely
 through n8n webhooks — no external API calls.
 
@@ -285,7 +286,7 @@ To offload LLM inference to an NVIDIA GPU, follow these steps **inside WSL 2**
 ## Directory Structure
 
 ```
-meetstack/
+farmstead/
 ├── docker-compose.yml        # Single compose file for all services
 ├── docker-compose.gpu.yml    # GPU override — adds NVIDIA passthrough
 ├── .env.example              # Template — copy to .env and fill in secrets

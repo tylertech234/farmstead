@@ -171,7 +171,7 @@ syncs due dates to the Radicale calendar.
 
 ---
 
-## 6. MeetStack Agent Router
+## 6. Farmstead Agent Router
 
 Central AI agent workflow that receives user questions, searches Wiki.js for
 context via RAG, generates an answer with Ollama, and self-assesses confidence
@@ -198,7 +198,7 @@ to trigger escalation or learning workflows.
    - Authenticates to Wiki.js via GraphQL login mutation
    - Searches wiki using GraphQL variables: `query SearchPages($q: String!) { pages { search(query: $q) { results { title path } } } }`
    - Fetches full page content for top results
-   - Sends context + question to Ollama `llama3.2:3b` with MeetStack system prompt
+   - Sends context + question to Ollama `llama3.2:3b` with Farmstead system prompt
    - Parses confidence from the LLM response
    - If low confidence → calls `/webhook/escalate` (Escalation Manager)
    - If admin provides answer later → calls `/webhook/learn` (Learn from Admin)
@@ -208,7 +208,7 @@ to trigger escalation or learning workflows.
 
 - Uses `this.helpers.httpRequest()` in Code node for all HTTP calls (avoids escaping issues with HTTP Request nodes)
 - Wiki.js search uses **GraphQL variables** (not string interpolation) to safely pass user input
-- System prompt includes full MeetStack knowledge (schedules, contacts, policies, events)
+- System prompt includes full Farmstead knowledge (field notes, contacts, procedures, schedules)
 - Confidence threshold: response containing "not confident" or "don't have" triggers escalation
 
 ### Environment / credentials needed
@@ -244,7 +244,7 @@ in its answer, flagging it for admin review.
 
 ### Environment / credentials needed
 
-- Vikunja admin credentials (`admin@meetstack.local`)
+- Vikunja admin credentials (`admin@farmstead.local`)
 
 ---
 

@@ -7,7 +7,7 @@ WIKI="http://wikijs:3000/graphql"
 # Login
 JWT=$(curl -s -X POST "$WIKI" \
   -H "Content-Type: application/json" \
-  -d '{"query":"mutation { authentication { login(username: \"admin@meetstack.local\", password: \"MeetStack2026!\", strategy: \"local\") { responseResult { succeeded } jwt } } }"}' \
+  -d '{"query":"mutation { authentication { login(username: \"admin@farmstead.local\", password: \"Farmstead2026!\", strategy: \"local\") { responseResult { succeeded } jwt } } }"}' \
   | grep -o '"jwt":"[^"]*' | cut -d'"' -f4)
 
 if [ -z "$JWT" ]; then
@@ -30,14 +30,14 @@ EOF
   echo "  Created: $title ($path)"
 }
 
-create_page "home" "Welcome to MeetStack" "# Welcome to MeetStack\\n\\nThis is the **Air Force Cadets** knowledge base.\\n\\n## Quick Links\\n- [Meeting Minutes](/meetings)\\n- [SOPs & Policies](/sops)\\n- [FAQ](/faq)\\n- [Contacts](/contacts)"
+create_page "home" "Welcome to Farmstead" "# Welcome to Farmstead\\n\\nThis is the **Farmstead operations** knowledge base.\\n\\n## Quick Links\\n- [Field Notes](/meetings)\\n- [Procedures](/sops)\\n- [FAQ](/faq)\\n- [Contacts](/contacts)"
 
-create_page "meetings" "Meeting Minutes" "# Meeting Minutes\\n\\n## 2026-03-25 — Weekly Standup\\n- **Attendees:** Tyler, Sarah, Mike\\n- **Agenda:** Equipment check, upcoming camp, website refresh\\n- **Action Items:**\\n  - Tyler: Order new radios (due Apr 1)\\n  - Sarah: Draft camp schedule (due Apr 5)\\n  - Mike: Update uniform guidelines on wiki\\n\\n## 2026-03-18 — Planning Session\\n- Discussed summer camp logistics\\n- Reviewed budget for Q2"
+create_page "meetings" "Field Notes" "# Field Notes\\n\\n## 2026-03-25 — Weekly Operations Review\\n- **Attendees:** Tyler, Sarah, Mike\\n- **Agenda:** Equipment check, seed inventory, irrigation repairs\\n- **Action Items:**\\n  - Tyler: Order replacement pump fittings (due Apr 1)\\n  - Sarah: Draft greenhouse planting schedule (due Apr 5)\\n  - Mike: Update maintenance checklist on wiki\\n\\n## 2026-03-18 — Planning Session\\n- Reviewed spring planting priorities\\n- Confirmed supply budget for Q2"
 
-create_page "sops" "SOPs and Policies" "# Standard Operating Procedures\\n\\n## Uniform Standards\\nAll cadets must wear the approved uniform during official events.\\n\\n## Communication Protocol\\n1. Use the Discord channel for day-to-day comms\\n2. Email for formal requests\\n3. Wiki for documentation\\n\\n## Equipment Sign-Out\\nAll equipment must be signed out through Vikunja task board."
+create_page "sops" "Procedures and Policies" "# Standard Operating Procedures\\n\\n## Daily Checklists\\nRecord greenhouse, water, and livestock checks before noon each day.\\n\\n## Communication Protocol\\n1. Use chat for day-to-day coordination\\n2. Email for formal requests\\n3. Wiki for documented procedures\\n\\n## Equipment Sign-Out\\nAll equipment must be signed out through the Vikunja task board."
 
-create_page "faq" "Frequently Asked Questions" "# FAQ\\n\\n## How do I join?\\nContact your local squadron or visit our website.\\n\\n## What is the meeting schedule?\\nWeekly meetings every Tuesday at 1830.\\n\\n## How do I access the shared calendar?\\nUse any CalDAV client (Thunderbird, Apple Calendar) and connect to the Radicale server."
+create_page "faq" "Frequently Asked Questions" "# FAQ\\n\\n## How do I access the stack remotely?\\nConnect through your approved VPN or Tailscale route first.\\n\\n## When are operations reviewed?\\nWeekly planning happens every Tuesday evening.\\n\\n## How do I access the shared calendar?\\nUse any CalDAV client (Thunderbird, Apple Calendar) and connect to the Radicale server."
 
-create_page "contacts" "Contact Directory" "# Contact Directory\\n\\n| Name | Role | Email |\\n|------|------|-------|\\n| Tyler | Tech Lead | tyler@example.com |\\n| Sarah | Logistics | sarah@example.com |\\n| Mike | Training | mike@example.com |"
+create_page "contacts" "Contact Directory" "# Contact Directory\\n\\n| Name | Role | Email |\\n|------|------|-------|\\n| Tyler | Operations Lead | tyler@example.com |\\n| Sarah | Logistics | sarah@example.com |\\n| Mike | Field Support | mike@example.com |"
 
 echo "Wiki.js setup complete!"

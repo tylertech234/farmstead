@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Export all Meetstack secrets to a secure backup archive.
+    Export all Farmstead secrets to a secure backup archive.
 .DESCRIPTION
     Wrapper for .working\scripts\Export-MeetstackSecrets.ps1
 #>

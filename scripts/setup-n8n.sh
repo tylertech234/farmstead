@@ -7,19 +7,19 @@ N8N="http://n8n:5678"
 echo "Logging in to n8n..."
 LOGIN_RESP=$(curl -s -D /tmp/n8n-headers.txt -X POST "$N8N/rest/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@meetstack.local","password":"MeetStack2026!"}')
+  -d '{"email":"admin@farmstead.local","password":"Farmstead2026!"}')
 
 echo "$LOGIN_RESP" | grep -q '"id"' && echo "Login successful" || {
   echo "Login failed, trying to set up owner account..."
   SETUP_RESP=$(curl -s -X POST "$N8N/rest/owner/setup" \
     -H "Content-Type: application/json" \
-    -d '{"email":"admin@meetstack.local","password":"MeetStack2026!","firstName":"Admin","lastName":"MeetStack"}')
+    -d '{"email":"admin@farmstead.local","password":"Farmstead2026!","firstName":"Admin","lastName":"Farmstead"}')
   echo "$SETUP_RESP" | grep -q '"id"' && echo "Owner setup successful" || echo "Owner setup failed: $SETUP_RESP"
 
   # Login again after setup
   LOGIN_RESP=$(curl -s -D /tmp/n8n-headers.txt -X POST "$N8N/rest/login" \
     -H "Content-Type: application/json" \
-    -d '{"email":"admin@meetstack.local","password":"MeetStack2026!"}')
+    -d '{"email":"admin@farmstead.local","password":"Farmstead2026!"}')
   echo "$LOGIN_RESP" | grep -q '"id"' && echo "Login successful" || echo "Login still failing: $LOGIN_RESP"
 }
 
@@ -48,7 +48,7 @@ WORKFLOW='{
         "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"model\":\"tinyllama\",\"prompt\":\"Summarize what Air Force Cadets do in 2 sentences.\",\"stream\":false}",
+        "jsonBody": "={\"model\":\"tinyllama\",\"prompt\":\"Summarize the Farmstead operations stack in 2 sentences.\",\"stream\":false}",
         "options": {
           "timeout": 120000
         }

@@ -3,7 +3,7 @@ WIKI="http://wikijs:3000/graphql"
 
 JWT=$(curl -s -X POST "$WIKI" \
   -H "Content-Type: application/json" \
-  -d '{"query":"mutation { authentication { login(username: \"admin@meetstack.local\", password: \"MeetStack2026!\", strategy: \"local\") { responseResult { succeeded } jwt } } }"}' \
+  -d '{"query":"mutation { authentication { login(username: \"admin@farmstead.local\", password: \"Farmstead2026!\", strategy: \"local\") { responseResult { succeeded } jwt } } }"}' \
   | grep -o '"jwt":"[^"]*' | cut -d'"' -f4)
 
 if [ -z "$JWT" ]; then
